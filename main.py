@@ -198,32 +198,33 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
 # Definimos el entorno en el que vamos a trabajar, para ello deberemos de preprocesar las observaciones
 # aportadas por OpenAI Gym y PettinZoo como se ha explicado en el trabajo teórico se realizará el 
 # siguiente preprocesado
-# - Tomar el máximo entre cada dos observaciones
-# - Tomar decisiones cada 4 frames y repetir estas durante los siguientes 4 frames
-# - Usar sticky actions en el entrenamiento (opcional)
 # - Cambiar a blanco y negro la observación
 # - Recortar para quedarnos solo con la zona de juego
 # - Si estamos en el entrenamiento multiagente, obtener la imagen simétrica con los colores de los 
 #   agentes cambiados. De esta forma aunque el agente aprende a actuar como el jugador 'first_0' (el de
 #   la derecha) puede jugar también como 'second_0' (el de la izquieda)
 # - Cambiar el tamaño de la imagen a 80x80
+# - Tomar el máximo entre cada dos observaciones
+# - Tomar decisiones cada 4 frames y repetir estas durante los siguientes 4 frames
+# - Usar sticky actions en el entrenamiento (opcional)
 # - Juntar 4 observaciones
 # - Reordenar la observación para que tenga shape (4,80,80) porqué es como trabaja pytorch
 # - Normalizar las observaciones para que los valores vayan de 0 a 1
 # De todo esto se encarga la función create_env según los parámetros de entrenamiento que tomemos
 def mirror_color(obs):
-    orange = np.float32(148.43301)
-    green = np.float32(147.17801)
+    orange = np.float32(148.433)
+    green = np.float32(147.178)
 
+    new_obs = obs
     rows, cols = obs.shape
-    for i in range(rows):
-        for j in range(cols):
-            pixel = obs[i][j]
+    for j in list(range(16,20)) + list(range(140,144)):
+        for i in range(cols):
+            pixel = new_obs[i][j]
             if pixel == orange:
-                obs[i][j] = green
+                new_obs[i][j] = green
             elif pixel == green:
-                obs[i][j] = orange
-    return np.array([row[::-1] for row in obs], dtype = np.float32)
+                new_obs[i][j] = orange
+    return np.array([row[::-1] for row in new_obs], dtype = np.float32)
 
 def create_env(mode = 1, sticky = True, render = False):
     if mode == 1:
@@ -234,8 +235,16 @@ def create_env(mode = 1, sticky = True, render = False):
     else:
         env = pong_v3.env()
 
-    env = supersuit.max_observation_v0(env, 2)
+    env = supersuit.observation_lambda_v0(env,
+            lambda obs,_ : obs[:, :, 0] * 0.299 + obs[:, :, 1] * 0.587 + obs[:, :, 2] * 0.114)
+    env = supersuit.observation_lambda_v0(env,
+            lambda obs,_ : obs[34:194,:].astype(np.float32))
+    if mode == 2:
+        env = supersuit.observation_lambda_v0(env,
+                lambda obs,_,agent : mirror_color(obs) if agent == "second_0" else obs)
+    env = supersuit.resize_v1(env, 80, 80)
 
+    env = supersuit.max_observation_v0(env, 2)
     if mode == 1:
         env = supersuit.frame_skip_v0(env, (4,4))
     else:
@@ -243,16 +252,7 @@ def create_env(mode = 1, sticky = True, render = False):
 
     if sticky:
         env = supersuit.sticky_actions_v0(env, repeat_action_probability=0.25)
-    env = supersuit.observation_lambda_v0(env,
-            lambda obs,_ : obs[:, :, 0] * 0.299 + obs[:, :, 1] * 0.587 + obs[:, :, 2] * 0.114)
-    env = supersuit.observation_lambda_v0(env,
-            lambda obs,_ : obs[34:194,:].astype(np.float32))
 
-    if mode == 2:
-        env = supersuit.observation_lambda_v0(env,
-                lambda obs,_,agent : mirror_color(obs) if agent == "second_0" else obs)
-
-    env = supersuit.resize_v1(env, 80, 80)
     env = supersuit.reshape_v0(env, (80,80,1))
     env = supersuit.frame_stack_v1(env, 4)
     env = supersuit.observation_lambda_v0(env,
