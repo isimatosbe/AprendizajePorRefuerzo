@@ -144,7 +144,7 @@ class Agent():
     def step_multiAgent(self, net_P1, net_P2):
         game_reward = None
         
-        # Turno jugador 'first_0'
+        # Turno del jugador 'first_0'
         new_state_P1, reward, done_P1, _ = self.env.last()
         self.reward += reward
 

@@ -36,12 +36,12 @@ def e_greedy(state, net, epsilon, mode ="", device = "cpu"):
 
 # Las funciones que antes determinaban un paso en una partida ahora podemos redefinirlas
 # para que definan una partida completa
-def play_bot(net, epsilon):
+def play_bot(net, epsilon, device):
     state = env.reset()
     game_reward = 0
 
     while True:
-        action = e_greedy(state, net, epsilon, "bot")
+        action = e_greedy(state, net, epsilon, "bot", device)
         new_state, reward, done, _ = env.step(action)
         game_reward += reward
 
@@ -52,7 +52,7 @@ def play_bot(net, epsilon):
     
     return game_reward
 
-def play_multiAgent(net_P1, net_P2, epsilon, render):
+def play_multiAgent(net_P1, net_P2, epsilon, render, device):
     env.reset()
     game_reward = 0
 
@@ -65,7 +65,7 @@ def play_multiAgent(net_P1, net_P2, epsilon, render):
         if done_P1:
             action_P1 = None
         else:
-            action_P1 = e_greedy(state_P1, net_P1, epsilon)
+            action_P1 = e_greedy(state_P1, net_P1, epsilon, device = device)
         env.step(action_P1)
         if render:
             env.render()
@@ -79,7 +79,7 @@ def play_multiAgent(net_P1, net_P2, epsilon, render):
         if done_P2:
             return game_reward
         else:
-            action_P2 = e_greedy(state_P2, net_P2, epsilon)
+            action_P2 = e_greedy(state_P2, net_P2, epsilon, device = device)
             env.step(action_P2)
             if render:
                 env.render()
@@ -96,9 +96,9 @@ if __name__ == "__main__":
                                                     Si se quiere jugar contra otro modelo introducir la ruta al modelo del agente (este actuará como el jugador 'second_0').""")
     parser.add_argument("--eps", default=0.05, help="Valor de exploración para la política a seguir por los agentes. Por defecto 0.05.")
     parser.add_argument("-g", "--games", default=100, help="Número de partidas a jugar, por defecto 100.")
-    #parser.add_argument("-r", "--record", help="Directory to store video recording")
     parser.add_argument("--render", default=False, action='store_true', help="Activar visualización de las partidas.")
     parser.add_argument("--sticky", default=True, action='store_false', help="Usar sticky actions en la creación del entorno. Por defecto sí.")
+    parser.add_argument("--cuda", default=False, action='store_true', help="Permitir el uso de CUDA.")
     args = parser.parse_args()
 
     epsilon = np.float32(args.eps)
@@ -106,6 +106,7 @@ if __name__ == "__main__":
     render = args.render
     mode = 0 if args.model_2 == 'bot' else 1 if args.model_2 is None else 2
     sticky = args.sticky
+    device = torch.device("cuda" if args.cuda else "cpu")
 
     # Igual que en main.py creamos un directorio y un archivo para guardar la información importante
     # sobre las partidas
@@ -121,7 +122,7 @@ if __name__ == "__main__":
     f.close()
 
     # Creamos el entorno con la función que definimos en main.py y cargamos las redes
-    env = main2.create_env(int(mode != 0) + 1, sticky, render)
+    env = main.create_env(int(mode != 0) + 1, sticky, render)
 
     if args.model_2 == 'bot':
         input_shape = env.observation_space.shape
@@ -129,14 +130,11 @@ if __name__ == "__main__":
     else:
         input_shape = env.observation_space('first_0').shape
         n_actions = env.action_space('first_0').n
-    
-    # if args.record:
-    #     env = gym.wrappers.Monitor(env, args.record)
 
-    net = dqn.DQN(input_shape, n_actions)
+    net = dqn.DQN(input_shape, n_actions).to(device)
     net.load_state_dict(torch.load(args.model, map_location=lambda storage, loc: storage))
     if args.model_2 != 'bot' and args.model_2 is not None:
-        net_2 = dqn.DQN(input_shape, n_actions)
+        net_2 = dqn.DQN(input_shape, n_actions).to(device)
         net_2.load_state_dict(torch.load(args.model_2, map_location=lambda storage, loc: storage))
 
     rewards = [] 
@@ -153,24 +151,24 @@ if __name__ == "__main__":
     # juegue como 'first_0' tenga ventaja.
     for i in range(games):
         if args.model_2 == 'bot':
-            reward = play_bot(net, epsilon)
+            reward = play_bot(net, epsilon, device)
         elif args.model_2 is None:
             if np.random.random() < 0.5:
                 print("Jugando como 'first_0', jugador de la derecha (verde).")
-                reward = play_multiAgent(net, None, epsilon, render)
+                reward = play_multiAgent(net, None, epsilon, render, device)
             else:
                 print("Jugando como 'second_0', jugador de la izquierda (naranja).")
                 f.write("<-> ")
-                reward = -play_multiAgent(None, net, epsilon, render)
+                reward = -play_multiAgent(None, net, epsilon, render, device)
                 reverse += 1
         else:
             if np.random.random() < 0.5:
                 print("Jugando como 'first_0', jugador de la derecha (verde).")
-                reward = play_multiAgent(net, net_2, epsilon, render)
+                reward = play_multiAgent(net, net_2, epsilon, render, device)
             else:
                 print("Jugando como 'second_0,' jugador de la izquierda (naranja).")
                 f.write("<-> ")
-                reward = -play_multiAgent(net_2, net, epsilon, render)
+                reward = -play_multiAgent(net_2, net, epsilon, render, device)
                 reverse += 1
         rewards.append(reward)
 
