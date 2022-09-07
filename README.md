@@ -65,8 +65,8 @@ Para que el entrenamiento sea mas rápido se realizarán algunas operaciones de 
 - **Pasar la imagen a blanco y negro junto con recortar y escalar la zona de juego.**
 - **Simetría y cambio de color en el entrenamiento multiagente.**  La estructura del Pong en PettingZoo está compuesta dos jugadores (`first_0` y `second_0`) cada uno corresponde con una de las palas del Pong, la verde (derecha) y naranja (izquierda) respectivamente. Para poder conseguir que un agente juegue contra si mismo necesitamos poder usar la red que lo determina con su rival. La red que estamos entrenando ha aprendido que mueve al agente de la derecha (que es verde) y que su rival (que es naranja) se encuentra en la parte izquierda de la pantalla. Para poder usar esta red con el agente `second_0` debemos recrear esta situación, esto lo conseguimos gracias a la función `mirror_color`. Esta función es la encargada de realizar la simetría y el cambio de color necesarios para poder usar la red con el agente naranja. La definición completa de esta función puede verse en el archivo `atari.py`. Un ejemplo del uso de esta función viene a continuación (aunque realmente el cambio se hace en blanco y negro).
 <table><tr>
-  <td> <p align="center"> <img src="img/atari/mirror-1.png" style="width: 50%"> </p> </td>
-  <td> <p align="center"> <img src="img/atari/mirror-2.png" style="width: 50%"> </p> </td>
+  <td> <p align="center"> <img src="img/atari/mirror-1.png" style="width: 60%"> </p> </td>
+  <td> <p align="center"> <img src="img/atari/mirror-2.png" style="width: 60%"> </p> </td>
 </tr></table>
 
 - **Máximo entre las dos últimas observaciones.**
@@ -103,7 +103,7 @@ La gráfica resume la recompensa obtenida por los agentes al jugar contra ambos 
 #### Segunda etapa
 En la siguiente etapa se tomarán los agentes anteriores y se hará que jueguen entre ellos 100 partidas para ver cuales actúan mejor. De esta forma se han obtenido los siguientes resultados:
 
- <p align="center"> <img src="img/atari/fights.png" style="width: 90%"> </p>
+ <p align="center"> <img src="img/atari/fights.png" style="width: 100%"> </p>
 
 Como podemos ver los agentes que terminan jugando contra si mismos parecen ser los que mejor rendimiento tienen.
 
@@ -112,4 +112,4 @@ Las dos grandes inclusiones que se han hecho en este trabajo han sido el entrena
 
 En la siguiente tabla se puede ver que los agentes entrenados con _sticky actions_ juegan bastante mejor que el que no hace uso de estas.
 
- <p align="center"> <img src="img/atari/noSticky.png" style="width: 90%"> </p>
+ <p align="center"> <img src="img/atari/noSticky.png" style="width: 100%"> </p>
