@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import collections
 
-import main
+import atari
 import dqn
 
 import gym
@@ -18,7 +18,7 @@ import time
 
 FPS = 25
 
-# La función e_greedy la definimos igual que en main.py con la particularidad de que
+# La función e_greedy la definimos igual que en atari.py con la particularidad de que
 # ahora uno de los modos puede ser totalmente aleatorio
 def e_greedy(state, net, epsilon, mode ="", device = "cpu"):
     if np.random.random() < epsilon or net is None:
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     sticky = args.sticky
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    # Igual que en main.py creamos un directorio y un archivo para guardar la información importante
+    # Igual que en atari.py creamos un directorio y un archivo para guardar la información importante
     # sobre las partidas
     try:
         os.mkdir("./evals/")
@@ -121,8 +121,8 @@ if __name__ == "__main__":
             %(args.model, args.model_2 if args.model_2 is not None else "aleatorio", epsilon, games, sticky))
     f.close()
 
-    # Creamos el entorno con la función que definimos en main.py y cargamos las redes
-    env = main.create_env(int(mode != 0) + 1, sticky, render)
+    # Creamos el entorno con la función que definimos en atari.py y cargamos las redes
+    env = atari.create_env(int(mode != 0) + 1, sticky, render)
 
     if args.model_2 == 'bot':
         input_shape = env.observation_space.shape

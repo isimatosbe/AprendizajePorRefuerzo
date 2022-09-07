@@ -1,5 +1,5 @@
-/evals
-record.ipynb
-eval_graph.ipynb
+atari/evals
+atari/record.ipynb
+atari/eval_graph.ipynb
 noStickyGraph.ipynb
-/videos
+atari/videos
