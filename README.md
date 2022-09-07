@@ -105,7 +105,7 @@ En la siguiente etapa se tomarán los agentes anteriores y se hará que jueguen 
 
  <p align="center"> <img src="img/atari/fights.png" style="width: 100%"> </p>
 
-Como podemos ver los agentes que terminan jugando contra si mismos parecen ser los que mejor rendimiento tienen.
+Como podemos ver los agentes que terminan jugando contra si mismos parecen ser los que mejor rendimiento tienen. En la siguiente [lista de reproducción](https://youtube.com/playlist?list=PLzjBjc6HHLwhvjK_h7uqNCnI3O_q5F-oK) de YouTube se puede ver una partida entre cada uno de los agentes. El nombre del video menciona primero al agente `first_0` (el verde) y después a `second_0` (el naranja).
 
 ### Uso de _sticky actions_
 Las dos grandes inclusiones que se han hecho en este trabajo han sido el entrenamiento multiagente e híbrido y el uso de _sticky actions_. Para evaluar el impacto del uso de estas últimas hemos entrenado a un agente sin hacer uso de las _sticky actions_ y hemos hecho que juegue 100 partidas en las condiciones anteriores contra los agentes anteriores, sin el uso de _sticky actions_ en las partidas. 
